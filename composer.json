@@ -1,0 +1,19 @@
+{
+    "name": "sergeybrook/jsonrpc-ws",
+	"description": "Simple JSON RPC v2.0 web-service implementation for PHP",
+	"type": "library",
+	"keywords": ["json", "rpc", "web-service"],
+	"license": "MIT",
+	"authors": [
+		{"name": "Sergey Brook", "email": "brook.sergey@gmail.com", "role": "Developer"}
+	],
+	"require": {
+		"php": ">=5.5",
+		"ext-json": "*"
+	},
+	"autoload": {
+		"psr-4": {
+			"SBrook\\": "src/"
+		}
+	}
+}
