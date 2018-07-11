@@ -7,6 +7,10 @@
 	"authors": [
 		{"name": "Sergey Brook", "email": "brook.sergey@gmail.com", "role": "Developer"}
 	],
+	"support": {
+		"email": "brook.sergey@gmail.com",
+		"issues": "https://github.com/SergeyBrook/jsonrpc-ws/issues"
+	},
 	"require": {
 		"php": ">=5.5",
 		"ext-json": "*"
