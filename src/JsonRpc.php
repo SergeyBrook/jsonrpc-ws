@@ -168,7 +168,11 @@ class JsonRpc {
 					}
 					// Is everything ok:
 					if ($ok) {
-						$result = $this->methods[$request["method"]]["handle"]($this, $request["params"]);
+						if (array_key_exists("params", $request)) {
+							$result = $this->methods[$request["method"]]["handle"]($this, $request["params"]);
+						} else {
+							$result = $this->methods[$request["method"]]["handle"]($this, []);
+						}
 					}
 				} else {
 					// Handle not exists:
