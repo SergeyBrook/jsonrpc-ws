@@ -7,6 +7,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com) and this p
 ### Changed
 - CHANGELOG file format.
 - VERSION file renamed to CHANGELOG.
+### Fixed
+- Minimum PHP version in Composer file.
 
 ## [1.0.1] - 2018-11-08
 ### Fixed
@@ -16,9 +18,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com) and this p
 
 ## [1.0.0] - 2018-07-11
 ### Added
-- Support information to Composer config.
+- Support information to Composer file.
 - Installation and usage instructions to README.
 ### Removed
-- Composer config from examples dir.
+- Composer file from examples dir.
 
 ## [0.1.0] - 2018-07-10 - Initial release.
