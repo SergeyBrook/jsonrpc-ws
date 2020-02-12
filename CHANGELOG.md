@@ -4,11 +4,17 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com) and this project adheres to [Semantic Versioning](https://semver.org).
 
 ## [Unreleased]
+### Added
+- `setName` and `getName` methods to manipulate service name.
+- `userData` array property to inject handlers dependencies.
+- JSON-RPC spec reference to README file.
 ### Changed
 - CHANGELOG file format.
 - VERSION file renamed to CHANGELOG.
 ### Fixed
 - Minimum PHP version in Composer file.
+### Deprecated
+- `setServiceName` method. Use `setName` method instead.
 
 ## [1.0.1] - 2018-11-08
 ### Fixed
