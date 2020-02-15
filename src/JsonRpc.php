@@ -26,7 +26,8 @@ class JsonRpc {
 	private $errors = [
 		"server" => [ // -32000 to -32099: JSON-RPC v2.0 Spec - Reserved for implementation-defined server-errors.
 			/*0*/ ["code" => -32000, "message" => "General server error"],
-			/*1*/ ["code" => -32001, "message" => "User not authenticated"]
+			/*1*/ ["code" => -32001, "message" => "User not authenticated"],
+			/*2*/ ["code" => -32002, "message" => "Malformed response data"]
 		],
 		"jsonrpc" => [ // -32100 to -32768: JSON-RPC v2.0 Spec - JSON-RPC Pre-defined errors.
 			/*0*/ ["code" => -32600, "message" => "Invalid request"], // The JSON sent is not a valid Request object.
@@ -141,7 +142,12 @@ class JsonRpc {
 
 					// Do not reply to notification messages (those without id):
 					if (array_key_exists("id", $request)) {
-						$this->pushResponse($response, $request["id"]);
+						if ($this->validateResponse($response)) {
+							$this->pushResponse($response, $request["id"]);
+						} else {
+							// Error (server:2) -32002 Malformed response data
+							$this->pushError("server", 2);
+						}
 					}
 				}
 			} else {
@@ -170,17 +176,17 @@ class JsonRpc {
 		$this->requests = [];
 
 		// Get input data:
-		$r = json_decode(file_get_contents("php://input"), true);
+		$request = json_decode(file_get_contents("php://input"), true);
 
-		if (is_array($r)) {
-			if (array_key_exists("jsonrpc", $r)) {
+		if (is_array($request)) {
+			if (array_key_exists("jsonrpc", $request)) {
 				// Single request:
-				$this->requests[] = $r;
+				$this->requests[] = $request;
 				$result = true;
 			} else {
 				// Batch request:
 				// TODO: Check every single request.
-				$this->requests = $r;
+				$this->requests = $request;
 				$result = true;
 			}
 		}
@@ -219,52 +225,24 @@ class JsonRpc {
 	private function processRequest($request) {
 		$result = [];
 
-		// Is user authenticated (when required):
+		// Is user authenticated (when required)?
 		if ($this->methods[$request["method"]]["auth"] && $this->userAuth || !$this->methods[$request["method"]]["auth"]) {
 			// Is called registered method:
 			if (array_key_exists($request["method"], $this->methods)) {
 				$handle = $this->methods[$request["method"]]["handle"];
 
-				// Is handle callable:
+				// Is handle callable?
 				if (is_callable($handle)) {
-					$ok = true;
-
-					// Check parameters:
-					foreach ($this->methods[$request["method"]]["params"] as $key => $requiredType) {
-						// Are all parameters set?
-						if (!is_array($request["params"]) || !array_key_exists($key, $request["params"])) {
-							// Error (jsonrpc:2) -32602 Invalid params
-							$result = $this->getError("jsonrpc", 2);
-							$ok = false;
-							break;
-						} else {
-							$actualType = gettype($request["params"][$key]);
-
-							// Is parameter of a required datatype?
-							if ($actualType != $requiredType) {
-								// Error (jsonrpc:2) -32602 Invalid params
-								$result = $this->getError("jsonrpc", 2);
-								$ok = false;
-								break;
-							}
-
-							// Is string parameter has an empty value?
-							else if ($requiredType == "string" && $request["params"][$key] == "") {
-								// Error (jsonrpc:2) -32602 Invalid params
-								$result = $this->getError("jsonrpc", 2);
-								$ok = false;
-								break;
-							}
-						}
-					}
-
-					// Is everything ok?
-					if ($ok) {
+					// Are all parameters valid?
+					if ($this->validateParams($request)) {
 						$params = [$this, array_key_exists("params", $request) ? $request["params"] : []];
 						$result = call_user_func_array($handle, $params);
+					} else {
+						// Error (jsonrpc:2) -32602 Invalid params
+						$result = $this->getError("jsonrpc", 2);
 					}
 				} else {
-					// Handle not exists:
+					// Handle not callable:
 					// Error (jsonrpc:1) -32601 Method not found
 					$result = $this->getError("jsonrpc", 1);
 				}
@@ -279,5 +257,68 @@ class JsonRpc {
 		}
 
 		return $result;
+	}
+
+	/**
+	 * Validate single request.
+	 * @param mixed $request
+	 * @return bool
+	 */
+	private function validateRequest($request): bool {
+		return is_array($request) && array_key_exists("jsonrpc", $request) && array_key_exists("method", $request);
+	}
+
+	/**
+	 * Validate single response.
+	 * @param mixed $response
+	 * @return bool
+	 */
+	private function validateResponse($response): bool {
+		return is_array($response) && array_key_exists("type", $response) && array_key_exists("value", $response);
+	}
+
+	/**
+	 * Validate request parameters.
+	 * @param array $request
+	 * @return bool
+	 */
+	private function validateParams(array $request): bool {
+		// Is there required parameters?
+		if (array_key_exists("params", $this->methods[$request["method"]]) && count($this->methods[$request["method"]]["params"]) > 0) {
+			// Is there parameters in request?
+			if (array_key_exists("params", $request) && is_array($request["params"])) {
+				// Check each parameter:
+				foreach ($this->methods[$request["method"]]["params"] as $key => $requiredType) {
+					$ok = false;
+
+					// Is parameter set?
+					if (array_key_exists($key, $request["params"])) {
+						$actualType = gettype($request["params"][$key]);
+
+						// Is parameter of a required datatype?
+						if ($actualType == $requiredType) {
+							// Datatype specific checks:
+							switch ($requiredType) {
+								case "string":
+									// Is string parameter has an empty value?
+									$ok = strlen($request["params"][$key]) > 0;
+									break;
+								default:
+									$ok = true;
+							}
+						}
+					}
+
+					// Return on first failed parameter:
+					if (!$ok) {
+						return false;
+					}
+				}
+			} else {
+				return false;
+			}
+		}
+
+		return true;
 	}
 }
