@@ -1,16 +1,12 @@
 <?php
 /**
  * Example JSON RPC service.
- *
- * @author Sergey Brook
- * @copyright 2018 Sergey Brook
- * @license MIT (see LICENSE)
  */
 
 // Stand-alone:
-//require_once("../src/JsonRpc.php");
+require_once("../src/JsonRpc.php");
 // Composer:
-require_once("../vendor/autoload.php");
+//require_once("../vendor/autoload.php");
 
 
 // Service methods declaration:
@@ -22,8 +18,8 @@ require_once("../vendor/autoload.php");
 $methods = [
 	"methodOne" => [
 		"handle" => "handleOne",
-		"auth" => false,
-		"params" => [] // No parameters
+		"auth" => false/*,
+		"params" => []*/ // No parameters
 	],
 	"methodTwo" => [
 		"handle" => "handleTwo",
@@ -40,27 +36,27 @@ $methods = [
 // Service level errors definition:
 // -32769 and on: JSON-RPC v2.0 Spec - Available for application defined errors.
 $errors = [
-	/*0*/	["code" => -32800, "message" => "Unhandled service error"],
-	/*1*/	["code" => -32801, "message" => "Error two"],
-	/*2*/	["code" => -32802, "message" => "Error three"]
+	/*0*/ ["code" => -32800, "message" => "General service error"],
+	/*1*/ ["code" => -32801, "message" => "Error two"],
+	/*2*/ ["code" => -32802, "message" => "Error three"]
 ];
 
 
 // JSON-RPC - create instance and register service methods:
 $jrpc = new SBrook\JsonRpc($methods);
 
-// Set service name:
-$jrpc->setServiceName("JSON-RPC-TEST");
+// Set service name (optional):
+$jrpc->setName("JSON-RPC-TEST");
 
-// Set service level errors:
+// Set service level errors (optional):
 $jrpc->setServiceErrors($errors);
 
-// Set user authentication:
+// Set user authentication (optional, by default set to FALSE):
 if (/*$userAuthenticated ===*/ true) {
 	$jrpc->setAuth(true);
 }
 
-// Process request(s) and output response:
+// Process request (single or batch) and output response:
 $jrpc->respond();
 
 // Exit:
@@ -85,7 +81,7 @@ function handleOne($jrpc, $params) {
 function handleTwo($jrpc, $params) {
 	$result = [
 		"type" => "result",
-		"value" => "I need positional parameters: 0 = ".$params[0]." and 1 = ".$params[1]
+		"value" => "I need positional parameters: 0 = {$params[0]} and 1 = {$params[1]}"
 	];
 
 	// Set user authentication from handler:
@@ -100,7 +96,7 @@ function handleTwo($jrpc, $params) {
 function handleThree($jrpc, $params) {
 	$result = [
 		"type" => "result",
-		"value" => "I need named parameters: paramOne = ".$params["paramOne"]." and paramTwo = ".$params["paramTwo"]
+		"value" => "I need named parameters: paramOne = {$params["paramOne"]} and paramTwo = {$params["paramTwo"]}"
 	];
 
 	// Set error from handler:
@@ -108,4 +104,3 @@ function handleThree($jrpc, $params) {
 
 	return $result;
 }
-?>

@@ -131,6 +131,9 @@ class JsonRpc {
 		return $result;
 	}
 
+	/**
+	 * Respond.
+	 */
 	public function respond() {
 		// Cleanup:
 		$this->responses = [];
@@ -144,9 +147,9 @@ class JsonRpc {
 						$response = $this->processRequest($request);
 
 						// Do not reply to notification messages (those without id):
-						if (array_key_exists("id", $request)) {
+						if (property_exists($request, "id")) {
 							if ($this->validateResponse($response)) {
-								$this->pushResponse($response, $request["id"]);
+								$this->pushResponse($response, $request->id);
 							} else {
 								// Error (server:2) -32002 Malformed response data
 								$this->pushError("server", 2);
@@ -231,11 +234,7 @@ class JsonRpc {
 	 * @param mixed $request
 	 */
 	private function pushRequest($request = null) {
-		if (is_object($request)) {
-			$this->requests[] = $request;
-		} else {
-			$this->requests[] = new stdClass();
-		}
+		$this->requests[] = is_object($request) ? $request : new stdClass();
 	}
 
 	/**
@@ -270,7 +269,7 @@ class JsonRpc {
 		//$result = [];
 
 		// Is user authenticated (when required)?
-		if ($this->methods[$request["method"]]["auth"] && $this->userAuth || !$this->methods[$request["method"]]["auth"]) {
+		if ($this->methods[$request->method]["auth"] && $this->userAuth || !$this->methods[$request->method]["auth"]) {
 			// Is called registered method:
 			if (array_key_exists($request->method, $this->methods)) {
 				$handle = $this->methods[$request->method]["handle"];
@@ -279,7 +278,7 @@ class JsonRpc {
 				if (is_callable($handle)) {
 					// Are all parameters valid?
 					if ($this->validateParams($request)) {
-						$params = [$this, $this->getParameters($request)];
+						$params = [$this, $this->getParams($request)];
 						$result = call_user_func_array($handle, $params);
 					} else {
 						// Error (jsonrpc:2) -32602 Invalid params
@@ -330,15 +329,15 @@ class JsonRpc {
 		// Is there required parameters?
 		if (array_key_exists("params", $this->methods[$request->method]) && count($this->methods[$request->method]["params"]) > 0) {
 			// Get request parameters:
-			$parameters = $this->getParameters($request);
+			$params = $this->getParams($request);
 
 			// Check each parameter:
 			foreach ($this->methods[$request->method]["params"] as $key => $requiredType) {
 				$ok = false;
 
 				// Is parameter set?
-				if (array_key_exists($key, $parameters)) {
-					$actualType = gettype($parameters[$key]);
+				if (array_key_exists($key, $params)) {
+					$actualType = gettype($params[$key]);
 
 					// Is parameter of a required datatype?
 					if ($actualType == $requiredType) {
@@ -346,7 +345,7 @@ class JsonRpc {
 						switch ($requiredType) {
 							case "string":
 								// Is string parameter has an empty value?
-								$ok = strlen($parameters[$key]) > 0;
+								$ok = strlen($params[$key]) > 0;
 								break;
 							default:
 								$ok = true;
@@ -369,7 +368,7 @@ class JsonRpc {
 	 * @param object $request
 	 * @return array
 	 */
-	private function getParameters($request): array {
+	private function getParams($request): array {
 		$result = [];
 
 		if (property_exists($request, "params")) {
