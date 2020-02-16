@@ -12,18 +12,52 @@ use stdClass;
  * @package SBrook
  */
 class JsonRpc {
+	/**
+	 * User data.
+	 * Use this to inject dependencies for service method handlers.
+	 * @var array
+	 */
 	public $userData = [];
 
+	/**
+	 * Service name.
+	 * @var string
+	 */
 	private $name = "";
+
+	/**
+	 * User authentication flag.
+	 * @var bool
+	 */
 	private $userAuth = false;
 
+	/**
+	 * Service methods definitions.
+	 * @var array
+	 */
 	private $methods = [];
+
+	/**
+	 * Requests store.
+	 * @var array
+	 */
 	private $requests = [];
+
+	/**
+	 * Responses store.
+	 * @var array
+	 */
 	private $responses = [];
 
 	/**
+	 * Request type.
+	 * @var int (0 = unset / 1 = single / 2 = batch).
+	 */
+	private $requestType = 0;
+
+	/**
 	 * Errors.
-	 * @var array $errors
+	 * @var array
 	 */
 	private $errors = [
 		"server" => [ // -32000 to -32099: JSON-RPC v2.0 Spec - Reserved for implementation-defined server-errors.
@@ -71,7 +105,7 @@ class JsonRpc {
 
 	/**
 	 * Set service name.
-	 * !!! DEPRECATED !!!
+	 * @deprecated 2.0.0 Use {@see JsonRpc::setName()} instead.
 	 * @param string $name
 	 */
 	public function setServiceName(string $name = "") {
@@ -173,15 +207,12 @@ class JsonRpc {
 		$header = "Content-Type: application/json";
 		$payload = "";
 
-		$requestCount = count($this->requests);
-		$responseCount = count($this->responses);
-
-		if ($requestCount == 0) {
+		if ($this->requestType == 0) {
 			// In case of 'parse error':
 			$payload = json_encode($this->responses[0]);
 		} else {
-			if ($responseCount > 0) {
-				if ($requestCount == 1) {
+			if (count($this->responses) > 0) {
+				if ($this->requestType == 1) {
 					// Single request:
 					$payload = json_encode($this->responses[0]);
 				} else {
@@ -189,7 +220,7 @@ class JsonRpc {
 					$payload = json_encode($this->responses);
 				}
 			} else {
-				// In case of 'notification(s)':
+				// In case of all 'notification(s)':
 				$header = "Content-Type: text/html";
 			}
 		}
@@ -208,6 +239,7 @@ class JsonRpc {
 
 		// Cleanup:
 		$this->requests = [];
+		$this->requestType = 0;
 
 		// Get input data:
 		$request = json_decode(file_get_contents("php://input"));
@@ -217,11 +249,13 @@ class JsonRpc {
 
 			if (is_array($request)) {
 				// Batch request:
+				$this->requestType = 2;
 				foreach ($request as $r) {
 					$this->pushRequest($r);
 				}
 			} else {
 				// Single request:
+				$this->requestType = 1;
 				$this->pushRequest($request);
 			}
 		}
