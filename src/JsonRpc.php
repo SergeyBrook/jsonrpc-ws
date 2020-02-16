@@ -270,7 +270,7 @@ class JsonRpc {
 
 		// Is user authenticated (when required)?
 		if ($this->methods[$request->method]["auth"] && $this->userAuth || !$this->methods[$request->method]["auth"]) {
-			// Is called registered method:
+			// Is called registered method?
 			if (array_key_exists($request->method, $this->methods)) {
 				$handle = $this->methods[$request->method]["handle"];
 
@@ -326,6 +326,15 @@ class JsonRpc {
 	 * @return bool
 	 */
 	private function validateParams($request): bool {
+		// Allowed types:
+		$types = [
+			"boolean",
+			"integer",
+			"double",
+			"string",
+			"array"
+		];
+
 		// Is there required parameters?
 		if (array_key_exists("params", $this->methods[$request->method]) && count($this->methods[$request->method]["params"]) > 0) {
 			// Get request parameters:
@@ -334,21 +343,25 @@ class JsonRpc {
 			// Check each parameter:
 			foreach ($this->methods[$request->method]["params"] as $key => $requiredType) {
 				$ok = false;
+				$requiredType = strtolower($requiredType);
 
-				// Is parameter set?
-				if (array_key_exists($key, $params)) {
-					$actualType = gettype($params[$key]);
+				// Is required type allowed?
+				if (in_array($requiredType, $types)) {
+					// Is parameter set?
+					if (array_key_exists($key, $params)) {
+						$actualType = strtolower(gettype($params[$key]));
 
-					// Is parameter of a required datatype?
-					if ($actualType == $requiredType) {
-						// Datatype specific checks:
-						switch ($requiredType) {
-							case "string":
-								// Is string parameter has an empty value?
-								$ok = strlen($params[$key]) > 0;
-								break;
-							default:
-								$ok = true;
+						// Is parameter of a required datatype?
+						if ($actualType == $requiredType) {
+							// Datatype specific checks:
+							switch ($requiredType) {
+								case "string":
+									// Is string parameter has an empty value?
+									$ok = strlen($params[$key]) > 0;
+									break;
+								default:
+									$ok = true;
+							}
 						}
 					}
 				}
