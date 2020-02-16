@@ -5,6 +5,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com) and this p
 
 ## [Unreleased]
 ### Added
+- Postman test requests.
+- Check for allowed parameter datatype.
 - `setName` and `getName` methods to manipulate service name.
 - `userData` array property to inject handlers dependencies.
 - JSON-RPC spec reference to README file.

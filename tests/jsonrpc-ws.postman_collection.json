@@ -1,0 +1,622 @@
+{
+	"info": {
+		"_postman_id": "b2f497dc-a80f-49c4-83ae-34dfc90d15cc",
+		"name": "JSON-RPC WS",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Single - valid methodOne",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"name": "Content-Type",
+						"type": "text",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n\t\"jsonrpc\": \"2.0\",\n\t\"method\": \"methodOne\",\n\t\"id\": \"b-single\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost/service.php",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"path": [
+						"service.php"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Single - valid methodTwo",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"name": "Content-Type",
+						"type": "text",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n\t\"jsonrpc\": \"2.0\",\n\t\"method\": \"methodTwo\",\n\t\"params\": [123, \"foo\"],\n\t\"id\": \"b-single\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost/service.php",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"path": [
+						"service.php"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Single - valid methodThree",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"name": "Content-Type",
+						"type": "text",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n\t\"jsonrpc\": \"2.0\",\n\t\"method\": \"methodThree\",\n\t\"params\": {\"paramOne\": \"foo\", \"paramTwo\": 123},\n\t\"id\": \"b-single\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost/service.php",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"path": [
+						"service.php"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Single - valid methodThree notify",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"name": "Content-Type",
+						"type": "text",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n\t\"jsonrpc\": \"2.0\",\n\t\"method\": \"methodThree\",\n\t\"params\": {\"paramOne\": \"foo\", \"paramTwo\": 123}\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost/service.php",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"path": [
+						"service.php"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Single - invalid method",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"name": "Content-Type",
+						"type": "text",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n\t\"jsonrpc\": \"2.0\",\n\t\"method\": \"methodFour\",\n\t\"params\": {\"paramOne\": \"foo\", \"paramTwo\": 123},\n\t\"id\": \"b-invalid\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost/service.php",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"path": [
+						"service.php"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Single - invalid params",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"name": "Content-Type",
+						"type": "text",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n\t\"jsonrpc\": \"2.0\",\n\t\"method\": \"methodThree\",\n\t\"params\": {\"paramOne\": \"foo\", \"paramTwo\": \"123\"},\n\t\"id\": \"b-single\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost/service.php",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"path": [
+						"service.php"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Single - invalid properties",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"name": "Content-Type",
+						"type": "text",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n\t\"method\": \"methodThree\",\n\t\"params\": {\"paramOne\": \"foo\", \"paramTwo\": 123},\n\t\"id\": \"b-single\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost/service.php",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"path": [
+						"service.php"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Single - invalid object",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"name": "Content-Type",
+						"type": "text",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n\tjsonrpc\": \"2.0\",\n\t\"method\": \"methodThree\",\n\t\"params\": {\"paramOne\": \"foo\", \"paramTwo\": 123},\n\t\"id\": \"b-single\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost/service.php",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"path": [
+						"service.php"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Single - invalid request",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"name": "Content-Type",
+						"type": "text",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost/service.php",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"path": [
+						"service.php"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Single - invalid empty",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"name": "Content-Type",
+						"type": "text",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost/service.php",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"path": [
+						"service.php"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Batch - valid",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"name": "Content-Type",
+						"type": "text",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "[\n\t{\n\t\t\"jsonrpc\": \"2.0\",\n\t\t\"method\": \"methodOne\",\n\t\t\"id\": \"b-batch-one\"\n\t},\n\t{\n\t\t\"jsonrpc\": \"2.0\",\n\t\t\"method\": \"methodTwo\",\n\t\t\"params\": [321, \"boo\"],\n\t\t\"id\": \"b-batch-two\"\n\t},\n\t{\n\t\t\"jsonrpc\": \"2.0\",\n\t\t\"method\": \"methodThree\",\n\t\t\"params\": {\"paramOne\": \"foo\", \"paramTwo\": 123},\n\t\t\"id\": \"b-batch-three\"\n\t}\n]",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost/service.php",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"path": [
+						"service.php"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Batch - valid single",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"name": "Content-Type",
+						"type": "text",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "[\n\t{\n\t\t\"jsonrpc\": \"2.0\",\n\t\t\"method\": \"methodOne\",\n\t\t\"id\": \"b-batch-one\"\n\t}\n]",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost/service.php",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"path": [
+						"service.php"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Batch - valid notify",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"name": "Content-Type",
+						"type": "text",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "[\n\t{\n\t\t\"jsonrpc\": \"2.0\",\n\t\t\"method\": \"methodOne\"\n\t},\n\t{\n\t\t\"jsonrpc\": \"2.0\",\n\t\t\"method\": \"methodTwo\",\n\t\t\"params\": [321, \"boo\"]\n\t},\n\t{\n\t\t\"jsonrpc\": \"2.0\",\n\t\t\"method\": \"methodThree\",\n\t\t\"params\": {\"paramOne\": \"foo\", \"paramTwo\": 123}\n\t}\n]",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost/service.php",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"path": [
+						"service.php"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Batch - mixed",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"name": "Content-Type",
+						"type": "text",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "[\n\t{},\n\t{\n\t\t\"jsonrpc\": \"2.0\",\n\t\t\"method\": \"methodOne\",\n\t\t\"id\": \"b-batch-one\"\n\t},\n\t{\n\t\t\"jsonrpc\": \"2.0\"\n\t},\n\t{\n\t\t\"jsonrpc\": \"2.0\",\n\t\t\"method\": \"methodTwo\",\n\t\t\"params\": [321, \"boo\"],\n\t\t\"id\": \"b-batch-two\"\n\t},\n\t{\n\t\t\"jsonrpc\": \"2.0\",\n\t\t\"method\": \"methodTwo\",\n\t\t\"params\": [321, \"boo\"]\n\t},\n\t{\n\t\t\"jsonrpc\": \"2.0\",\n\t\t\"method\": \"methodThree\",\n\t\t\"params\": {\"paramOne\": \"foo\", \"paramTwo\": 123},\n\t\t\"id\": \"b-batch-three\"\n\t}\n]",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost/service.php",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"path": [
+						"service.php"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Batch - invalid object",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"name": "Content-Type",
+						"type": "text",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "[\n\t{\n\t\t\"jsonrpc\": \"2.0\",\n\t\t\"method\": \"methodOne\",\n\t\t\"id\": \"b-batch-one\"\n\t},\n\t{\n\t\t\"jsonrpc\": \"2.0\",\n\t\t\"method\": \"methodTwo\",\n\t\t\"params\": [321, \"boo\"],\n\t\t\"id\": \"b-batch-two\"\n\t},\n\t{\n\t\t\"jsonrpc\": \"2.0\",\n\t\t\"method\": \"methodThree\",\n\t\t\"params\": {\"paramOne\": \"foo\", \"paramTwo\": 123\n]",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost/service.php",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"path": [
+						"service.php"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Batch - invalid not empty single",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"name": "Content-Type",
+						"type": "text",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "[1]",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost/service.php",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"path": [
+						"service.php"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Batch - invalid not empty",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"name": "Content-Type",
+						"type": "text",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "[1, 2, 3]",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost/service.php",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"path": [
+						"service.php"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Batch - invalid empty",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"name": "Content-Type",
+						"type": "text",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "[]",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost/service.php",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"path": [
+						"service.php"
+					]
+				}
+			},
+			"response": []
+		}
+	],
+	"protocolProfileBehavior": {}
+}

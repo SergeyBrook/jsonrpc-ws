@@ -5,23 +5,59 @@
 
 namespace SBrook;
 
+use stdClass;
+
 /**
  * Class JsonRpc
  * @package SBrook
  */
 class JsonRpc {
+	/**
+	 * User data.
+	 * Use this to inject dependencies for service method handlers.
+	 * @var array
+	 */
 	public $userData = [];
 
+	/**
+	 * Service name.
+	 * @var string
+	 */
 	private $name = "";
+
+	/**
+	 * User authentication flag.
+	 * @var bool
+	 */
 	private $userAuth = false;
 
+	/**
+	 * Service methods definitions.
+	 * @var array
+	 */
 	private $methods = [];
+
+	/**
+	 * Requests store.
+	 * @var array
+	 */
 	private $requests = [];
+
+	/**
+	 * Responses store.
+	 * @var array
+	 */
 	private $responses = [];
 
 	/**
+	 * Request type.
+	 * @var int (0 = unset / 1 = single / 2 = batch).
+	 */
+	private $requestType = 0;
+
+	/**
 	 * Errors.
-	 * @var array $errors
+	 * @var array
 	 */
 	private $errors = [
 		"server" => [ // -32000 to -32099: JSON-RPC v2.0 Spec - Reserved for implementation-defined server-errors.
@@ -69,7 +105,7 @@ class JsonRpc {
 
 	/**
 	 * Set service name.
-	 * !!! DEPRECATED !!!
+	 * @deprecated 2.0.0 Use {@see JsonRpc::setName()} instead.
 	 * @param string $name
 	 */
 	public function setServiceName(string $name = "") {
@@ -129,6 +165,9 @@ class JsonRpc {
 		return $result;
 	}
 
+	/**
+	 * Respond.
+	 */
 	public function respond() {
 		// Cleanup:
 		$this->responses = [];
@@ -138,16 +177,21 @@ class JsonRpc {
 			// Process request(s):
 			if (count($this->requests) > 0) {
 				foreach ($this->requests as $request) {
-					$response = $this->processRequest($request);
+					if ($this->validateRequest($request)) {
+						$response = $this->processRequest($request);
 
-					// Do not reply to notification messages (those without id):
-					if (array_key_exists("id", $request)) {
-						if ($this->validateResponse($response)) {
-							$this->pushResponse($response, $request["id"]);
-						} else {
-							// Error (server:2) -32002 Malformed response data
-							$this->pushError("server", 2);
+						// Do not reply to notification messages (those without id):
+						if (property_exists($request, "id")) {
+							if ($this->validateResponse($response)) {
+								$this->pushResponse($response, $request->id);
+							} else {
+								// Error (server:2) -32002 Malformed response data
+								$this->pushError("server", 2);
+							}
 						}
+					} else {
+						// Error (jsonrpc:0) -32600 Invalid request
+						$this->pushError("jsonrpc", 0);
 					}
 				}
 			} else {
@@ -159,10 +203,31 @@ class JsonRpc {
 			$this->pushError("jsonrpc", 4);
 		}
 
+		// Prepare response:
+		$header = "Content-Type: application/json";
+		$payload = "";
+
+		if ($this->requestType == 0) {
+			// In case of 'parse error':
+			$payload = json_encode($this->responses[0]);
+		} else {
+			if (count($this->responses) > 0) {
+				if ($this->requestType == 1) {
+					// Single request:
+					$payload = json_encode($this->responses[0]);
+				} else {
+					// Batch request:
+					$payload = json_encode($this->responses);
+				}
+			} else {
+				// In case of all 'notification(s)':
+				$header = "Content-Type: text/html";
+			}
+		}
+
 		// Respond:
-		header("Content-Type: application/json");
-		// TODO: Rewrite.
-		echo json_encode(count($this->responses) > 1 ? $this->responses : $this->responses[0]);
+		header($header);
+		echo $payload;
 	}
 
 	/**
@@ -174,24 +239,36 @@ class JsonRpc {
 
 		// Cleanup:
 		$this->requests = [];
+		$this->requestType = 0;
 
 		// Get input data:
-		$request = json_decode(file_get_contents("php://input"), true);
+		$request = json_decode(file_get_contents("php://input"));
 
-		if (is_array($request)) {
-			if (array_key_exists("jsonrpc", $request)) {
-				// Single request:
-				$this->requests[] = $request;
-				$result = true;
-			} else {
+		if (!is_null($request)) {
+			$result = true;
+
+			if (is_array($request)) {
 				// Batch request:
-				// TODO: Check every single request.
-				$this->requests = $request;
-				$result = true;
+				$this->requestType = 2;
+				foreach ($request as $r) {
+					$this->pushRequest($r);
+				}
+			} else {
+				// Single request:
+				$this->requestType = 1;
+				$this->pushRequest($request);
 			}
 		}
 
 		return $result;
+	}
+
+	/**
+	 * Push single request to 'requests':
+	 * @param mixed $request
+	 */
+	private function pushRequest($request = null) {
+		$this->requests[] = is_object($request) ? $request : new stdClass();
 	}
 
 	/**
@@ -219,23 +296,23 @@ class JsonRpc {
 
 	/**
 	 * Process single request.
-	 * @param $request
+	 * @param object $request
 	 * @return array
 	 */
 	private function processRequest($request) {
-		$result = [];
+		//$result = [];
 
 		// Is user authenticated (when required)?
-		if ($this->methods[$request["method"]]["auth"] && $this->userAuth || !$this->methods[$request["method"]]["auth"]) {
-			// Is called registered method:
-			if (array_key_exists($request["method"], $this->methods)) {
-				$handle = $this->methods[$request["method"]]["handle"];
+		if ($this->methods[$request->method]["auth"] && $this->userAuth || !$this->methods[$request->method]["auth"]) {
+			// Is called registered method?
+			if (array_key_exists($request->method, $this->methods)) {
+				$handle = $this->methods[$request->method]["handle"];
 
 				// Is handle callable?
 				if (is_callable($handle)) {
 					// Are all parameters valid?
 					if ($this->validateParams($request)) {
-						$params = [$this, array_key_exists("params", $request) ? $request["params"] : []];
+						$params = [$this, $this->getParams($request)];
 						$result = call_user_func_array($handle, $params);
 					} else {
 						// Error (jsonrpc:2) -32602 Invalid params
@@ -265,7 +342,7 @@ class JsonRpc {
 	 * @return bool
 	 */
 	private function validateRequest($request): bool {
-		return is_array($request) && array_key_exists("jsonrpc", $request) && array_key_exists("method", $request);
+		return is_object($request) && property_exists($request, "jsonrpc") && property_exists($request, "method");
 	}
 
 	/**
@@ -279,21 +356,34 @@ class JsonRpc {
 
 	/**
 	 * Validate request parameters.
-	 * @param array $request
+	 * @param object $request
 	 * @return bool
 	 */
-	private function validateParams(array $request): bool {
-		// Is there required parameters?
-		if (array_key_exists("params", $this->methods[$request["method"]]) && count($this->methods[$request["method"]]["params"]) > 0) {
-			// Is there parameters in request?
-			if (array_key_exists("params", $request) && is_array($request["params"])) {
-				// Check each parameter:
-				foreach ($this->methods[$request["method"]]["params"] as $key => $requiredType) {
-					$ok = false;
+	private function validateParams($request): bool {
+		// Allowed types:
+		$types = [
+			"boolean",
+			"integer",
+			"double",
+			"string",
+			"array"
+		];
 
+		// Is there required parameters?
+		if (array_key_exists("params", $this->methods[$request->method]) && count($this->methods[$request->method]["params"]) > 0) {
+			// Get request parameters:
+			$params = $this->getParams($request);
+
+			// Check each parameter:
+			foreach ($this->methods[$request->method]["params"] as $key => $requiredType) {
+				$ok = false;
+				$requiredType = strtolower($requiredType);
+
+				// Is required type allowed?
+				if (in_array($requiredType, $types)) {
 					// Is parameter set?
-					if (array_key_exists($key, $request["params"])) {
-						$actualType = gettype($request["params"][$key]);
+					if (array_key_exists($key, $params)) {
+						$actualType = strtolower(gettype($params[$key]));
 
 						// Is parameter of a required datatype?
 						if ($actualType == $requiredType) {
@@ -301,24 +391,43 @@ class JsonRpc {
 							switch ($requiredType) {
 								case "string":
 									// Is string parameter has an empty value?
-									$ok = strlen($request["params"][$key]) > 0;
+									$ok = strlen($params[$key]) > 0;
 									break;
 								default:
 									$ok = true;
 							}
 						}
 					}
-
-					// Return on first failed parameter:
-					if (!$ok) {
-						return false;
-					}
 				}
-			} else {
-				return false;
+
+				// Return on first failed parameter:
+				if (!$ok) {
+					return false;
+				}
 			}
 		}
 
 		return true;
+	}
+
+	/**
+	 * Get request parameters.
+	 * @param object $request
+	 * @return array
+	 */
+	private function getParams($request): array {
+		$result = [];
+
+		if (property_exists($request, "params")) {
+			if (is_array($request->params)) {
+				$result = $request->params;
+			} else if (is_object($request->params)) {
+				foreach ($request->params as $key => $value) {
+					$result[$key] = $value;
+				}
+			}
+		}
+
+		return $result;
 	}
 }
