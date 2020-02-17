@@ -1,7 +1,7 @@
 {
 	"info": {
 		"_postman_id": "b2f497dc-a80f-49c4-83ae-34dfc90d15cc",
-		"name": "JSON-RPC WS",
+		"name": "JSON-RPC WS Examples",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
 	},
 	"item": [
@@ -54,6 +54,40 @@
 				"body": {
 					"mode": "raw",
 					"raw": "{\n\t\"jsonrpc\": \"2.0\",\n\t\"method\": \"methodTwo\",\n\t\"params\": [123, \"foo\"],\n\t\"id\": \"b-single\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost/service.php",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"path": [
+						"service.php"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Single - valid methodTwo service error",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"name": "Content-Type",
+						"type": "text",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n\t\"jsonrpc\": \"2.0\",\n\t\"method\": \"methodTwo\",\n\t\"params\": [-123, \"foo\"],\n\t\"id\": \"b-single\"\n}",
 					"options": {
 						"raw": {
 							"language": "json"
@@ -461,7 +495,7 @@
 				],
 				"body": {
 					"mode": "raw",
-					"raw": "[\n\t{},\n\t{\n\t\t\"jsonrpc\": \"2.0\",\n\t\t\"method\": \"methodOne\",\n\t\t\"id\": \"b-batch-one\"\n\t},\n\t{\n\t\t\"jsonrpc\": \"2.0\"\n\t},\n\t{\n\t\t\"jsonrpc\": \"2.0\",\n\t\t\"method\": \"methodTwo\",\n\t\t\"params\": [321, \"boo\"],\n\t\t\"id\": \"b-batch-two\"\n\t},\n\t{\n\t\t\"jsonrpc\": \"2.0\",\n\t\t\"method\": \"methodTwo\",\n\t\t\"params\": [321, \"boo\"]\n\t},\n\t{\n\t\t\"jsonrpc\": \"2.0\",\n\t\t\"method\": \"methodThree\",\n\t\t\"params\": {\"paramOne\": \"foo\", \"paramTwo\": 123},\n\t\t\"id\": \"b-batch-three\"\n\t}\n]",
+					"raw": "[\n\t{},\n\t{\n\t\t\"jsonrpc\": \"2.0\",\n\t\t\"method\": \"methodOne\",\n\t\t\"id\": \"b-batch-one\"\n\t},\n\t{\n\t\t\"jsonrpc\": \"2.0\"\n\t},\n\t{\n\t\t\"jsonrpc\": \"2.0\",\n\t\t\"method\": \"methodTwo\",\n\t\t\"params\": [321, \"boo\"],\n\t\t\"id\": \"b-batch-two-1\"\n\t},\n\t{\n\t\t\"jsonrpc\": \"2.0\",\n\t\t\"method\": \"methodTwo\",\n\t\t\"params\": [-321, \"boo\"],\n\t\t\"id\": \"b-batch-two-2\"\n\t},\n\t{\n\t\t\"jsonrpc\": \"2.0\",\n\t\t\"method\": \"methodTwo\",\n\t\t\"params\": [321, \"boo\"]\n\t},\n\t{\n\t\t\"jsonrpc\": \"2.0\",\n\t\t\"method\": \"methodThree\",\n\t\t\"params\": {\"paramOne\": \"foo\", \"paramTwo\": 123},\n\t\t\"id\": \"b-batch-three\"\n\t}\n]",
 					"options": {
 						"raw": {
 							"language": "json"

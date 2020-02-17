@@ -16,18 +16,18 @@
 		function getData(event) {
 			var request = false;
 
-			if (event.target.id == 'b-single') {
+			if (event.target.id === 'b-single') {
 				// Prepare single request:
 				request = {jsonrpc: '2.0', method: 'methodThree', params: {paramOne: 'foo', paramTwo: 123}, id: event.target.id};
-			} else if (event.target.id == 'b-batch') {
+			} else if (event.target.id === 'b-batch') {
 				// Prepare batch request:
 				request = [
 					{jsonrpc: '2.0', method: 'methodOne', id: event.target.id + '-one'},
 					{jsonrpc: '2.0', method: 'methodTwo', params: [321, 'boo'], id: event.target.id + '-two'},
 					{jsonrpc: '2.0', method: 'methodThree', params: {paramOne: 'foo', paramTwo: 123}, id: event.target.id + '-three'}
 				];
-			} else if (event.target.id == 'b-invalid') {
-				// Prepare request to non-existant method:
+			} else if (event.target.id === 'b-invalid') {
+				// Prepare request to non-existing method:
 				request = {jsonrpc: '2.0', method: 'methodFour', id: event.target.id};
 			}
 
@@ -56,6 +56,7 @@
 		<button id="b-batch" type="button">Batch request</button>
 		<button id="b-invalid" type="button">Invalid request</button>
 		<br>
+		<label for="t-result"></label>
 		<textarea id="t-result" rows="15" cols="100"></textarea>
 	</form>
 </body>

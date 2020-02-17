@@ -5,12 +5,14 @@ The format is based on [Keep a Changelog](https://keepachangelog.com) and this p
 
 ## [Unreleased](https://github.com/SergeyBrook/jsonrpc-ws)
 ### Added
-- Postman test requests.
+- README file to examples.
+- Postman test requests to examples.
 - Check for allowed parameter datatype.
 - `setName` and `getName` methods to manipulate service name.
 - `userData` array property to inject handlers dependencies.
 - JSON-RPC spec reference to README file.
 ### Changed
+- Examples to demonstrate new features.
 - CHANGELOG file format.
 - VERSION file renamed to CHANGELOG.
 ### Fixed
