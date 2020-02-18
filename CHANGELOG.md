@@ -4,15 +4,19 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com) and this project adheres to [Semantic Versioning](https://semver.org).
 
 ## [Unreleased](https://github.com/SergeyBrook/jsonrpc-ws)
+### Added
+- Validation of response type being `result` or `error` as per spec.
+- Validation of type 'string' in `method` request field as per spec.
+- Validation of version in `jsonrpc` request field as per spec.
 
 ## [1.1.0-rc.1](https://github.com/SergeyBrook/jsonrpc-ws/releases/tag/v1.1.0-rc.1) - 2020-02-17
 ### Added
 - README file to examples.
 - Postman test requests to examples.
-- Check for allowed parameter datatype.
+- Check for allowed datatype in request parameters.
 - `setName` and `getName` methods to manipulate service name.
-- `userData` array property to inject handlers dependencies.
-- JSON-RPC spec reference to README file.
+- `userData` property (array) to inject dependencies for method handlers.
+- JSON-RPC 2.0 spec reference to README file.
 ### Changed
 - Examples to demonstrate new features.
 - CHANGELOG file format.
@@ -20,7 +24,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com) and this p
 ### Fixed
 - Minimum PHP version in Composer file.
 ### Deprecated
-- `setServiceName` method. Use `setName` method instead.
+- `setServiceName` method will be removed in v2.0.0. Use `setName` method instead.
 
 ## [1.0.1](https://github.com/SergeyBrook/jsonrpc-ws/releases/tag/v1.0.1) - 2018-11-08
 ### Fixed
@@ -31,7 +35,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com) and this p
 ## [1.0.0](https://github.com/SergeyBrook/jsonrpc-ws/releases/tag/v1.0.0) - 2018-07-11
 ### Added
 - Support information to Composer file.
-- Installation and usage instructions to README.
+- Installation and usage instructions to README file.
 ### Removed
 - Composer file from examples dir.
 

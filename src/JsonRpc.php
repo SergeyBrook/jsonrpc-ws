@@ -342,7 +342,13 @@ class JsonRpc {
 	 * @return bool
 	 */
 	private function validateRequest($request): bool {
-		return is_object($request) && property_exists($request, "jsonrpc") && property_exists($request, "method");
+		return is_object($request)
+			&& property_exists($request, "jsonrpc")
+			&& $request->jsonrpc === "2.0"
+			&& property_exists($request, "method")
+			&& is_string($request->method)
+			&& strlen($request->method) > 0
+		;
 	}
 
 	/**
@@ -351,7 +357,17 @@ class JsonRpc {
 	 * @return bool
 	 */
 	private function validateResponse($response): bool {
-		return is_array($response) && array_key_exists("type", $response) && array_key_exists("value", $response);
+		// Possible response types:
+		$types = [
+			"result",
+			"error"
+		];
+
+		return is_array($response)
+			&& array_key_exists("type", $response)
+			&& in_array($response["type"], $types)
+			&& array_key_exists("value", $response)
+		;
 	}
 
 	/**
