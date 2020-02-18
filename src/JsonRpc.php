@@ -342,9 +342,14 @@ class JsonRpc {
 	 * @return bool
 	 */
 	private function validateRequest($request): bool {
+		// Supported versions:
+		$versions = [
+			"2.0"
+		];
+
 		return is_object($request)
 			&& property_exists($request, "jsonrpc")
-			&& $request->jsonrpc === "2.0"
+			&& in_array($request->jsonrpc, $versions, true)
 			&& property_exists($request, "method")
 			&& is_string($request->method)
 			&& strlen($request->method) > 0
@@ -365,7 +370,7 @@ class JsonRpc {
 
 		return is_array($response)
 			&& array_key_exists("type", $response)
-			&& in_array($response["type"], $types)
+			&& in_array($response["type"], $types, true)
 			&& array_key_exists("value", $response)
 		;
 	}
@@ -396,7 +401,7 @@ class JsonRpc {
 				$requiredType = strtolower($requiredType);
 
 				// Is required type allowed?
-				if (in_array($requiredType, $types)) {
+				if (in_array($requiredType, $types, true)) {
 					// Is parameter set?
 					if (array_key_exists($key, $params)) {
 						$actualType = strtolower(gettype($params[$key]));
