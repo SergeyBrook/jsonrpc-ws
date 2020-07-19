@@ -5,6 +5,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com) and this p
 
 ## [Unreleased](https://github.com/SergeyBrook/jsonrpc-ws)
 ### Added
+- Console app example.
 - `getResponse` method to manually get response.
 ### Changed
 - `respond` method now returns `true` if response sent successfully or `false` otherwise.
