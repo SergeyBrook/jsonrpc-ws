@@ -166,10 +166,17 @@ class JsonRpc {
 	}
 
 	/**
-	 * Respond.
+	 * Get response.
 	 * @param string $request
+	 * @return array
 	 */
-	public function respond(string $request = "") {
+	public function getResponse(string $request = ""): array {
+		$result = [
+			"status" => ["code" => 0, "message" => "Ok"],
+			"headers" => [],
+			"payload" => ""
+		];
+
 		// Set request:
 		if (strlen(trim($request)) > 0) {
 			$this->setRequest($request);
@@ -177,16 +184,61 @@ class JsonRpc {
 			$this->setHttpRequest();
 		}
 
-		// Get response:
-		$response = $this->getResponse();
-
-		// Set headers:
-		foreach ($response["headers"] as $name => $value) {
-			header("$name: $value");
+		if ($this->requestType == 0) {
+			if (count($this->responses) > 0) {
+				// In case of 'internal error' or 'parse error':
+				$result["headers"]["Content-Type"] = "application/json";
+				$result["payload"] = json_encode($this->responses[0]);
+			} else {
+				// No request(s) processed.
+				// Something really bad happened here...:
+				$result["status"]["code"] = 1;
+				$result["status"]["message"] = "No requests processed";
+			}
+		} else {
+			if (count($this->responses) > 0) {
+				if ($this->requestType == 1) {
+					// Single request:
+					$result["headers"]["Content-Type"] = "application/json";
+					$result["payload"] = json_encode($this->responses[0]);
+				} else {
+					// Batch request:
+					$result["headers"]["Content-Type"] = "application/json";
+					$result["payload"] = json_encode($this->responses);
+				}
+			} else {
+				// In case of all notifications:
+				$result["headers"]["Content-Type"] = "text/plain";
+			}
 		}
 
-		// Respond:
-		echo $response["payload"];
+		return $result;
+	}
+
+	/**
+	 * Respond.
+	 * @param string $request
+	 * @return bool
+	 */
+	public function respond(string $request = ""): bool {
+		$result = false;
+
+		// Get response:
+		$response = $this->getResponse($request);
+
+		// If response status is ok - do respond:
+		if ($response["status"]["code"] === 0) {
+			$result = true;
+
+			// Set headers:
+			foreach ($response["headers"] as $name => $value) {
+				header("$name: $value");
+			}
+			// Respond:
+			echo $response["payload"];
+		}
+
+		return $result;
 	}
 
 	/**
@@ -194,7 +246,7 @@ class JsonRpc {
 	 * @param string $request
 	 * @return bool
 	 */
-	public function setRequest(string $request = ""): bool {
+	private function setRequest(string $request = ""): bool {
 		$result = false;
 		$this->cleanup();
 
@@ -281,48 +333,6 @@ class JsonRpc {
 			// Error (jsonrpc:0) -32600 Invalid request
 			$this->addError("jsonrpc", 0);
 		}
-	}
-
-	/**
-	 * Get response.
-	 * @return array
-	 */
-	public function getResponse(): array {
-		$result = [
-			"status" => ["code" => 0, "message" => "Ok"],
-			"headers" => [],
-			"payload" => ""
-		];
-
-		if ($this->requestType == 0) {
-			if (count($this->responses) > 0) {
-				// In case of 'internal error' or 'parse error':
-				$result["headers"]["Content-Type"] = "application/json";
-				$result["payload"] = json_encode($this->responses[0]);
-			} else {
-				// No request(s) processed.
-				// In case of calling 'getResponse' without calling 'setRequest' before:
-				$result["status"]["code"] = 1;
-				$result["status"]["message"] = "No requests processed";
-			}
-		} else {
-			if (count($this->responses) > 0) {
-				if ($this->requestType == 1) {
-					// Single request:
-					$result["headers"]["Content-Type"] = "application/json";
-					$result["payload"] = json_encode($this->responses[0]);
-				} else {
-					// Batch request:
-					$result["headers"]["Content-Type"] = "application/json";
-					$result["payload"] = json_encode($this->responses);
-				}
-			} else {
-				// In case of all notifications:
-				$result["headers"]["Content-Type"] = "text/plain";
-			}
-		}
-
-		return $result;
 	}
 
 	/**
