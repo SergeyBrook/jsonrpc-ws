@@ -166,97 +166,49 @@ class JsonRpc {
 	}
 
 	/**
-	 * Respond.
+	 * Get response.
+	 * @param string $request
+	 * @return array
 	 */
-	public function respond() {
-		// Cleanup:
-		$this->responses = [];
+	public function getResponse(string $request = ""): array {
+		$result = [
+			"status" => ["code" => 0, "message" => "Ok"],
+			"headers" => [],
+			"payload" => ""
+		];
 
-		// Get request data:
-		if ($this->getRequest()) {
-			// Process request(s):
-			if (count($this->requests) > 0) {
-				foreach ($this->requests as $request) {
-					if ($this->validateRequest($request)) {
-						$response = $this->processRequest($request);
-
-						// Do not reply to notification messages (those without id):
-						if (property_exists($request, "id")) {
-							if ($this->validateResponse($response)) {
-								$this->pushResponse($response, $request->id);
-							} else {
-								// Error (server:2) -32002 Malformed response data
-								$this->pushError("server", 2);
-							}
-						}
-					} else {
-						// Error (jsonrpc:0) -32600 Invalid request
-						$this->pushError("jsonrpc", 0);
-					}
-				}
-			} else {
-				// Error (jsonrpc:0) -32600 Invalid request
-				$this->pushError("jsonrpc", 0);
-			}
+		// Set request:
+		if (strlen(trim($request)) > 0) {
+			$this->setRequest($request);
 		} else {
-			// Error (jsonrpc:4) -32700 Parse error
-			$this->pushError("jsonrpc", 4);
+			$this->setHttpRequest();
 		}
 
-		// Prepare response:
-		$header = "Content-Type: application/json";
-		$payload = "";
-
 		if ($this->requestType == 0) {
-			// In case of 'parse error':
-			$payload = json_encode($this->responses[0]);
+			if (count($this->responses) > 0) {
+				// In case of 'internal error' or 'parse error':
+				$result["headers"]["Content-Type"] = "application/json";
+				$result["payload"] = json_encode($this->responses[0]);
+			} else {
+				// No request(s) processed.
+				// Something really bad happened here...:
+				$result["status"]["code"] = 1;
+				$result["status"]["message"] = "No requests processed";
+			}
 		} else {
 			if (count($this->responses) > 0) {
 				if ($this->requestType == 1) {
 					// Single request:
-					$payload = json_encode($this->responses[0]);
+					$result["headers"]["Content-Type"] = "application/json";
+					$result["payload"] = json_encode($this->responses[0]);
 				} else {
 					// Batch request:
-					$payload = json_encode($this->responses);
+					$result["headers"]["Content-Type"] = "application/json";
+					$result["payload"] = json_encode($this->responses);
 				}
 			} else {
-				// In case of all 'notification(s)':
-				$header = "Content-Type: text/html";
-			}
-		}
-
-		// Respond:
-		header($header);
-		echo $payload;
-	}
-
-	/**
-	 * Get request.
-	 * @return bool
-	 */
-	private function getRequest(): bool {
-		$result = false;
-
-		// Cleanup:
-		$this->requests = [];
-		$this->requestType = 0;
-
-		// Get input data:
-		$request = json_decode(file_get_contents("php://input"));
-
-		if (!is_null($request)) {
-			$result = true;
-
-			if (is_array($request)) {
-				// Batch request:
-				$this->requestType = 2;
-				foreach ($request as $r) {
-					$this->pushRequest($r);
-				}
-			} else {
-				// Single request:
-				$this->requestType = 1;
-				$this->pushRequest($request);
+				// In case of all notifications:
+				$result["headers"]["Content-Type"] = "text/plain";
 			}
 		}
 
@@ -264,19 +216,139 @@ class JsonRpc {
 	}
 
 	/**
-	 * Push single request to 'requests':
+	 * Respond.
+	 * @param string $request
+	 * @return bool
+	 */
+	public function respond(string $request = ""): bool {
+		$result = false;
+
+		// Get response:
+		$response = $this->getResponse($request);
+
+		// If response status is ok - do respond:
+		if ($response["status"]["code"] === 0) {
+			$result = true;
+
+			// Set headers:
+			foreach ($response["headers"] as $name => $value) {
+				header("$name: $value");
+			}
+			// Respond:
+			echo $response["payload"];
+		}
+
+		return $result;
+	}
+
+	/**
+	 * Set request.
+	 * @param string $request
+	 * @return bool
+	 */
+	private function setRequest(string $request = ""): bool {
+		$result = false;
+		$this->cleanup();
+
+		$request = json_decode($request);
+
+		if (is_null($request)) {
+			// Error (jsonrpc:4) -32700 Parse error
+			$this->addError("jsonrpc", 4);
+		} else {
+			$result = true;
+
+			if (is_array($request)) {
+				// Batch request:
+				$this->requestType = 2;
+				foreach ($request as $r) {
+					$this->addRequest($r);
+				}
+			} else {
+				// Single request:
+				$this->requestType = 1;
+				$this->addRequest($request);
+			}
+
+			$this->setResponse();
+		}
+
+		return $result;
+	}
+
+	/**
+	 * Set request from http request body.
+	 * @return bool
+	 */
+	private function setHttpRequest(): bool {
+		$result = false;
+		$this->cleanup();
+
+		$request = file_get_contents("php://input");
+
+		if ($request !== false) {
+			$result = $this->setRequest($request);
+		} else {
+			// Error (jsonrpc:3) -32603 Internal error
+			$this->addError("jsonrpc", 3);
+		}
+
+		return $result;
+	}
+
+	/**
+	 * Cleanup.
+	 */
+	private function cleanup() {
+		$this->requests = [];
+		$this->responses = [];
+		$this->requestType = 0;
+	}
+
+	/**
+	 * Set response for all requests.
+	 */
+	private function setResponse() {
+		// Process request(s):
+		if (count($this->requests) > 0) {
+			foreach ($this->requests as $request) {
+				if ($this->validateRequest($request)) {
+					$response = $this->processRequest($request);
+
+					// Do not reply to notification messages (those without id):
+					if (property_exists($request, "id")) {
+						if ($this->validateResponse($response)) {
+							$this->addResponse($response, $request->id);
+						} else {
+							// Error (server:2) -32002 Malformed response data
+							$this->addError("server", 2);
+						}
+					}
+				} else {
+					// Error (jsonrpc:0) -32600 Invalid request
+					$this->addError("jsonrpc", 0);
+				}
+			}
+		} else {
+			// Error (jsonrpc:0) -32600 Invalid request
+			$this->addError("jsonrpc", 0);
+		}
+	}
+
+	/**
+	 * Add single request to 'requests':
 	 * @param mixed $request
 	 */
-	private function pushRequest($request = null) {
+	private function addRequest($request = null) {
 		$this->requests[] = is_object($request) ? $request : new stdClass();
 	}
 
 	/**
-	 * Push single response to 'responses'.
+	 * Add single response to 'responses'.
 	 * @param array $response
 	 * @param mixed $id
 	 */
-	private function pushResponse(array $response, $id = null) {
+	private function addResponse(array $response, $id = null) {
 		$this->responses[] = [
 			"jsonrpc" => "2.0",
 			$response["type"] => $response["value"],
@@ -285,13 +357,13 @@ class JsonRpc {
 	}
 
 	/**
-	 * Push single error to 'responses'.
+	 * Add single error to 'responses'.
 	 * @param string $type
 	 * @param int $idx
 	 * @param mixed $id
 	 */
-	private function pushError(string $type, int $idx, $id = null) {
-		$this->pushResponse($this->getError($type, $idx), $id);
+	private function addError(string $type, int $idx, $id = null) {
+		$this->addResponse($this->getError($type, $idx), $id);
 	}
 
 	/**

@@ -1,16 +1,23 @@
 # Examples
 
 ## Contents
+- `console.php` - Example console application.
 - `index.html` - Example web page to demonstrate sending requests to service.
 - `service.php` - Example service implementation.
 - `[inc]` - Includes classes used by `service.php` to demonstrate some possibilities.
 - `[tests]` - Includes [Postman](https://www.postman.com/) collection with test requests.
 
+## Run console application
+From library examples dir run:
+```shell
+php ./console.php
+```
+
 ## Run example service
-From library root dir run PHP Development Server:
-
-    $ php -S localhost:80 -t ./examples/
-
+From library examples dir run PHP Development Server:
+```shell
+php -S localhost:80
+```
 The example service will be available at `http://localhost/service.php`.
 
 ## View in web-browser
