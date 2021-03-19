@@ -374,10 +374,10 @@ class JsonRpc {
 	private function processRequest($request) {
 		//$result = [];
 
-		// Is user authenticated (when required)?
-		if ($this->methods[$request->method]["auth"] && $this->userAuth || !$this->methods[$request->method]["auth"]) {
-			// Is called registered method?
-			if (array_key_exists($request->method, $this->methods)) {
+		// Is called registered method?
+		if (array_key_exists($request->method, $this->methods)) {
+			// Is user authenticated (when required)?
+			if ($this->methods[$request->method]["auth"] && $this->userAuth || !$this->methods[$request->method]["auth"]) {
 				$handle = $this->methods[$request->method]["handle"];
 
 				// Is handle callable?
@@ -395,14 +395,15 @@ class JsonRpc {
 					// Error (jsonrpc:1) -32601 Method not found
 					$result = $this->getError("jsonrpc", 1);
 				}
+
 			} else {
-				// Method not registered:
-				// Error (jsonrpc:1) -32601 Method not found
-				$result = $this->getError("jsonrpc", 1);
+				// Error (server:1) -32001 User not authenticated
+				$result = $this->getError("server", 1);
 			}
 		} else {
-			// Error (server:1) -32001 User not authenticated
-			$result = $this->getError("server", 1);
+			// Method not registered:
+			// Error (jsonrpc:1) -32601 Method not found
+			$result = $this->getError("jsonrpc", 1);
 		}
 
 		return $result;
